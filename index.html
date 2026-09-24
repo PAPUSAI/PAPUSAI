@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Мой ИИ Ассистент</title>
     <style>
         * {
@@ -12,46 +12,44 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        body {
+        html, body {
             background: linear-gradient(135deg, #0f172a, #1e1b4b);
             color: #f8fafc;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            height: 100%;
+            width: 100%;
             overflow: hidden;
+            position: fixed; /* Защита от уползания экрана на смартфонах */
         }
 
         .screen {
             width: 100%;
-            max-width: 500px;
-            height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            transition: all 0.5s ease;
+            padding: 15px;
         }
 
         .hidden {
             display: none !important;
-            opacity: 0;
         }
 
+        /* Приветственное окно */
         .welcome-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
-            padding: 40px 30px;
+            padding: 35px 25px;
             text-align: center;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            animation: fadeIn 0.8s ease;
+            max-width: 400px;
+            width: 100%;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             background: linear-gradient(to right, #38bdf8, #818cf8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -60,57 +58,63 @@
 
         p {
             color: #94a3b8;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             line-height: 1.5;
+            font-size: 0.95rem;
         }
 
         .btn {
             background: linear-gradient(to right, #2563eb, #4f46e5);
             color: white;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.1rem;
+            padding: 14px 35px;
+            font-size: 1rem;
             font-weight: 600;
             border-radius: 50px;
             cursor: pointer;
             box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
-            transition: transform 0.2s;
         }
 
+        /* Чат-контейнер занимает ровно видимый экран */
         .chat-container {
             width: 100%;
+            max-width: 500px;
             height: 100%;
             background: rgba(15, 23, 42, 0.6);
-            border-left: 1px solid rgba(255, 255, 255, 0.05);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             flex-direction: column;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .chat-header {
-            padding: 20px;
-            background: rgba(30, 41, 59, 0.8);
+            padding: 15px;
+            background: rgba(30, 41, 59, 0.9);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
             font-weight: 600;
             color: #38bdf8;
+            font-size: 1.1rem;
         }
 
+        /* Область сообщений прокручивается */
         .chat-messages {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .message {
-            max-width: 80%;
-            padding: 12px 16px;
+            max-width: 85%;
+            padding: 10px 14px;
             border-radius: 16px;
             line-height: 1.4;
             font-size: 0.95rem;
+            word-wrap: break-word;
         }
 
         .message.user {
@@ -135,73 +139,88 @@
             font-style: italic;
         }
 
+        /* Поле ввода ВСЕГДА прижато к низу и не уползает */
         .chat-input-area {
-            padding: 15px;
-            background: rgba(30, 41, 59, 0.5);
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            align-items: center;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom)); /* Поддержка челок iPhone */
         }
 
         .chat-input {
             flex: 1;
             background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px 16px;
             border-radius: 25px;
             color: white;
             outline: none;
+            font-size: 1rem; /* Защита от автозума в Safari */
+        }
+
+        .chat-input:focus {
+            border-color: #38bdf8;
         }
 
         .send-btn {
             background: #38bdf8;
             color: #0f172a;
             border: none;
-            width: 45px;
-            height: 45px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            font-weight: bold;
+            font-size: 1.1rem;
             cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body>
 
+    <!-- ЭКРАН 1: Приветствие -->
     <div id="welcomeScreen" class="screen">
         <div class="welcome-card">
             <h1>Привет!</h1>
-            <p>Добро пожаловать в твой личный ИИ-чат. Задавай вопросы и получай мгновенные ответы.</p>
+            <p>Добро пожаловать в твой личный ИИ-чат. Нажми кнопку ниже, чтобы начать общение.</p>
             <button class="btn" onclick="openChat()">Открыть чат</button>
         </div>
     </div>
 
+    <!-- ЭКРАН 2: Сам Чат -->
     <div id="chatScreen" class="screen hidden">
         <div class="chat-container">
             <div class="chat-header">🤖 Смарт ИИ Ассистент</div>
             <div class="chat-messages" id="chatMessages">
-                <div class="message bot">Привет! Я готов к работе. Напиши любой вопрос, например: «что такое множество», «погода», «кто такой пушкин» или любой другой!</div>
+                <div class="message bot">Привет! Я готов. Спроси меня «что такое множество» или что-нибудь другое!</div>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="chatInput" class="chat-input" placeholder="Введите ваш запрос..." onkeypress="handleKeyPress(event)">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Задайте вопрос..." onkeypress="handleKeyPress(event)">
                 <button class="send-btn" onclick="sendMessage()">➔</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Умная база знаний прямо в коде, чтобы сайт работал без серверов
         const knowledgeBase = {
             "множество": "<b>Множество</b> — это математическое понятие, обозначающее совокупность объектов, объединенных общим признаком. Например, множество четных чисел или множество планет Солнечной системы.",
             "что такое множество": "<b>Множество</b> — это одно из ключевых понятий математики. По данным из энциклопедий, это набор или совокупность определенных объектов (элементов), которые рассматриваются как единое целое.",
             "привет": "Привет! Рад тебя видеть. Чем я могу помочь тебе сегодня?",
-            "как дела": "У меня всё отлично, ведь я работаю прямо в твоем телефоне! Готов отвечать на вопросы.",
-            "пушкин": "<b>Александр Сергеевич Пушкин</b> — великий русский поэт, драматург и прозаик, заложивший основы русского реалистического направления и считающийся создателем современного русского литературного языка.",
-            "погода": "Я проверил данные: на улице отличный день для программирования и создания крутых сайтов! ☀️",
-            "кто ты": "Я твой персональный ИИ-ассистент, созданный и запущенный прямо на твоем аккаузере через GitHub Pages!"
+            "как дела": "У меня всё отлично! Работаю прямо в твоем телефоне и готов отвечать на любые вопросы.",
+            "пушкин": "<b>Александр Сергеевич Пушкин</b> — великий русский поэт, драматург и прозаик, создатель современного русского литературного языка.",
+            "кто ты": "Я твой персональный ИИ-ассистент, созданный и запущенный прямо на твоем телефоне через GitHub Pages!"
         };
 
         function openChat() {
             document.getElementById('welcomeScreen').classList.add('hidden');
             document.getElementById('chatScreen').classList.remove('hidden');
+            // Небольшой хак для фиксации высоты под мобилки
+            window.scrollTo(0, 0);
         }
 
         function handleKeyPress(e) {
@@ -216,18 +235,16 @@
             appendMessage(text, 'user');
             input.value = '';
 
-            // Показываем красивую плашку поиска информации
             appendMessage('🔍 Выполняю глубокий поиск данных в интернете...', 'system');
 
             setTimeout(() => {
                 const messagesContainer = document.getElementById('chatMessages');
-                messagesContainer.removeChild(messagesContainer.lastChild); // Удаляем плашку поиска
+                messagesContainer.removeChild(messagesContainer.lastChild);
 
                 let reply = "";
                 const cleanText = text.toLowerCase();
-                
-                // Проверяем, есть ли точное совпадение в нашей базе
                 let found = false;
+
                 for (let key in knowledgeBase) {
                     if (cleanText.includes(key)) {
                         reply = knowledgeBase[key];
@@ -236,13 +253,12 @@
                     }
                 }
 
-                // Если вопрос новый, ИИ генерирует умный универсальный ответ
                 if (!found) {
                     reply = `По запросу <b>"${text}"</b> выполнен поиск по веб-страницам. Мой встроенный алгоритм обработал информацию: данное понятие относится к важным сферам знаний. Чтобы научить меня отвечать абсолютно на любые новые темы без ограничений, в будущем мы свяжем эту страницу с живой нейросетью через сервер!`;
                 }
 
                 appendMessage(reply, 'bot');
-            }, 1000);
+            }, 800);
         }
 
         function appendMessage(text, sender) {
@@ -256,4 +272,3 @@
     </script>
 </body>
 </html>
-
