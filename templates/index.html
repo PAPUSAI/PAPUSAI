@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>База данных команды PVXEN</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; text-align: center; padding: 20px; }
+        .table-wrapper { overflow-x: auto; margin: 20px auto; width: 95%; }
+        table { width: 100%; border-collapse: collapse; background: #1e1e1e; min-width: 400px; }
+        th, td { padding: 12px; border: 1px solid #333; text-align: left; }
+        th { background: #ff4500; }
+    </style>
+</head>
+<body>
+    <h1>Состав команды PVXEN</h1>
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>Внутренний ID 1</th>
+                <th>Никнейм</th>
+                <th>Standoff 2 ID</th>
+                <th>Внутренний ID 2</th>
+            </tr>
+            {% for player in players %}
+            <tr>
+                <td>{{ player[0] }}</td>
+                <td>{{ player[1] }}</td>
+                <td>{{ player[2] }}</td>
+                <td>{{ player[3] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
